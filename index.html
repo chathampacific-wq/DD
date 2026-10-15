@@ -3206,7 +3206,7 @@ const sfx = {
     whistle(T + 1.4, 0.8, 800, 2800, 0.1);     burst(T + 2.22, 0.85);
   },
   evac: () => {
-    if (!soundOn) return;
+    if (!soundOn || window.__censored) return;      // CENSORED keeps the alarm quiet on site
     const ctx = getAudioCtx(); if (!ctx) return;
     const s = STYLE_ADJUST[soundStyle] || STYLE_ADJUST.classic;
     const out = ctx.createGain(); out.gain.value = 0.9 * s.v;
@@ -6699,7 +6699,8 @@ try {
   b.addEventListener('click', () => {
     if (Date.now() - last < 3000) return;
     last = Date.now();
-    try { sfx.evac(); } catch (e) {}   // evacuation alarm (was crowd cheering)
+    // evacuation alarm (was crowd cheering); with CENSORED on, just a plain click
+    try { if (window.__censored) sfx.click(); else sfx.evac(); } catch (e) {}
   });
 })();
 } catch (cheerErr) { /* cosmetic; never let it break the page */ }
@@ -6774,7 +6775,7 @@ try {
     window.__censored = on;
     b.classList.toggle('on', on);
     b.setAttribute('aria-pressed', on ? 'true' : 'false');
-    b.title = on ? 'Voice lines muted — tap to turn them back on' : 'Mute the fun voice lines';
+    b.title = on ? 'Voice lines and the Safety alarm muted — tap to turn them back on' : 'Mute the fun voice lines and the Safety alarm';
   };
   apply();
   b.addEventListener('click', () => {
