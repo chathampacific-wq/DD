@@ -3072,6 +3072,54 @@ const sfx = {
   },
 
   // Evacuation alarm: three rising "whoop" siren sweeps, like a plant evacuation signal
+  // pinball machine: plunger launch, bumper pops, chime bells, score jingle, flipper clack
+  pinball: () => {
+    if (!soundOn) return;
+    const ctx = getAudioCtx(); if (!ctx) return;
+    const s = STYLE_ADJUST[soundStyle] || STYLE_ADJUST.classic;
+    const comp = ctx.createDynamicsCompressor();
+    comp.threshold.value = -16; comp.ratio.value = 4;
+    const out = ctx.createGain(); out.gain.value = 0.55 * s.v;
+    comp.connect(out); out.connect(ctx.destination);
+    const T = ctx.currentTime + 0.03;
+    const noise = (t0, dur, vol, type, f, q) => {
+      const len = Math.max(1, Math.floor(ctx.sampleRate * (dur + 0.05)));
+      const buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+      const src = ctx.createBufferSource(), flt = ctx.createBiquadFilter(), g = ctx.createGain();
+      src.buffer = buf; flt.type = type; flt.frequency.value = f; flt.Q.value = q || 1;
+      g.gain.setValueAtTime(0.0001, t0); g.gain.linearRampToValueAtTime(vol, t0 + 0.004);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      src.connect(flt); flt.connect(g); g.connect(comp); src.start(t0); src.stop(t0 + dur + 0.05);
+    };
+    const tone = (t0, freq, dur, vol, type, slideTo) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = type || 'sine'; o.frequency.setValueAtTime(freq, t0);
+      if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, t0 + dur);
+      g.gain.setValueAtTime(0.0001, t0); g.gain.linearRampToValueAtTime(vol, t0 + 0.004);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      o.connect(g); g.connect(comp); o.start(t0); o.stop(t0 + dur + 0.05);
+    };
+    // chime bell: struck metal bar, a few inharmonic partials
+    const bell = (t0, f, vol) => { tone(t0, f, 0.7, vol); tone(t0, f * 2.76, 0.35, vol * 0.4); tone(t0, f * 5.4, 0.15, vol * 0.2); noise(t0, 0.02, vol * 0.5, 'highpass', 4000); };
+    // 1. plunger: spring pulled and released, ball launched up the lane
+    noise(T, 0.05, 0.5, 'lowpass', 350, 0.8);
+    tone(T, 140, 0.18, 0.35, 'triangle', 70);
+    noise(T + 0.06, 0.35, 0.18, 'bandpass', 1800, 0.7);          // ball rattling up the shooter lane
+    // 2. pop bumpers
+    [0.38, 0.52, 0.63].forEach((d, i) => {
+      noise(T + d, 0.06, 0.55, 'lowpass', 500, 1);
+      tone(T + d, 220 + i * 40, 0.08, 0.3, 'square', 110);
+      noise(T + d, 0.015, 0.3, 'highpass', 3000);
+    });
+    // 3. score chime bells (ding-ding-ding)
+    bell(T + 0.42, 1046, 0.32); bell(T + 0.56, 1318, 0.3); bell(T + 0.67, 1568, 0.3); bell(T + 0.95, 2093, 0.28);
+    // 4. little electronic score jingle
+    [1046, 1318, 1568, 2093, 1568, 2093].forEach((f, i) => tone(T + 1.1 + i * 0.065, f, 0.09, 0.12, 'square'));
+    // 5. flipper clack
+    noise(T + 1.55, 0.05, 0.6, 'lowpass', 700, 1.2);
+    noise(T + 1.55, 0.02, 0.3, 'bandpass', 2500, 2);
+  },
   evac: () => {
     if (!soundOn) return;
     const ctx = getAudioCtx(); if (!ctx) return;
@@ -5745,7 +5793,7 @@ try {
 try {
 (function initSwitchSounds() {
   const SW = 'button, a.nav-btn';
-  const SKIP = '.lip-btn, .logo-gear-btn, .gear-home, .sound-toggle, .cover-close, .lightbox-close, .terms-link, #coverPrev, #coverNext, #searchClear, #measureTabs [data-tab="spring"], #measureTabs [data-tab="dockpit"], .nav-btn[data-target="fieldnotes"], .nav-btn[data-target="safety"], .nav-btn[data-target="mandoors"], .nav-btn[data-target="measurements"], #askBtn, [disabled]';
+  const SKIP = '.lip-btn, .logo-gear-btn, .gear-home, .sound-toggle, .cover-close, .lightbox-close, .terms-link, #coverPrev, #coverNext, #searchClear, #measureTabs [data-tab="spring"], #measureTabs [data-tab="dockpit"], .nav-btn[data-target="fieldnotes"], .nav-btn[data-target="safety"], .nav-btn[data-target="mandoors"], .nav-btn[data-target="measurements"], .nav-btn[data-target="troubleshoot"], #askBtn, [disabled]';
   let pressed = false, lastSwitch = 0;
   const target = (ev) => {
     const b = ev.target && ev.target.closest ? ev.target.closest(SW) : null;
@@ -6559,6 +6607,16 @@ try {
   b.addEventListener('click', () => { if (Date.now() - last < 700) return; last = Date.now(); try { sfx.lock(); } catch (e) {} });
 })();
 } catch (lockErr) { /* cosmetic; never let it break the page */ }
+
+// ---- TROUBLESHOOT menu button: pinball machine ----
+try {
+(function initPinball() {
+  const b = document.querySelector('.nav-btn[data-target="troubleshoot"]');
+  if (!b) return;
+  let last = 0;
+  b.addEventListener('click', () => { if (Date.now() - last < 1800) return; last = Date.now(); try { sfx.pinball(); } catch (e) {} });
+})();
+} catch (pinballErr) { /* cosmetic; never let it break the page */ }
 
 // ---- CRITICAL MEASUREMENTS menu button: jet takes off ----
 try {
