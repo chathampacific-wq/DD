@@ -1580,17 +1580,6 @@
 <main>
   <div class="panel" id="troubleshootAnchor">
     <div class="panel-head"><span>TROUBLESHOOT — EQUIPMENT</span><span>STEP 1</span></div>
-    <div class="ask-diag" id="askDiag">
-      <div class="ask-diag-head"><span>💬 Ask The DoorOlogist</span><small>AI · GROUNDED IN THIS APP</small></div>
-      <textarea id="askInput" maxlength="600" placeholder="Describe the problem in your own words — what's it doing, what have you already checked…"></textarea>
-      <div class="ask-actions">
-        <button type="button" class="primary" id="askBtn" disabled>Ask</button>
-        <button type="button" class="ghost" id="askStopBtn" style="display:none;">Stop</button>
-      </div>
-      <div id="askStatus" role="status" aria-live="polite">Checking whether this is available in this view…</div>
-      <div id="askResult"></div>
-      <div class="manual-note" style="padding:8px 0 0;">A quick start, not a confirmed diagnosis — always verify on the equipment. Didn't find it in the tree below? This is a better bet than guessing a category.</div>
-    </div>
     <div class="search-box">
       <div class="search-row">
         <input type="search" id="searchInput" placeholder="Search symptoms, causes, parts… (e.g. reverses, photo eye)" aria-label="Search symptoms and causes" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search">
@@ -5199,6 +5188,7 @@ try {
   const stopBtn = document.getElementById('askStopBtn');
   const statusEl = document.getElementById('askStatus');
   const resultEl = document.getElementById('askResult');
+  if (!box || !input || !askBtn) return;   // Ask section removed
   if (!box) return;
   let sample = null, ctl = null, available = false, unavailableWhy = '';
   let lastAskQuestion = '', lastAskResult = null;
