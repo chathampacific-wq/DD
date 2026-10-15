@@ -3792,6 +3792,18 @@ function selectEquip(key, wrap) {
   renderEquipList();
   renderResults();
   saveSession();
+  // opening a type: bring its product + symptom list into view
+  if (opening) setTimeout(() => { const b = equipGrid.querySelector('.equip-btn.active'); if (b) tsScrollTo(b); }, 60);
+}
+
+// smooth scroll that also works where smooth scrolling is ignored
+function tsScrollTo(el, offset) {
+  try {
+    const want = Math.max(0, el.getBoundingClientRect().top + window.scrollY - (offset == null ? 10 : offset));
+    const y0 = window.scrollY;
+    try { window.scrollTo({ top: want, behavior: 'smooth' }); } catch (e) { window.scrollTo(0, want); }
+    setTimeout(() => { if (Math.abs(window.scrollY - y0) < 4 && Math.abs(window.scrollY - want) > 40) window.scrollTo(0, want); }, 450);
+  } catch (e) {}
 }
 
 function selectBrand(key, brand) {
@@ -3801,6 +3813,8 @@ function selectBrand(key, brand) {
   renderEquipList();
   renderResults(); // refresh notes if results are already open
   saveSession();
+  // product picked: move on to the symptom list
+  if (activeBrand) setTimeout(() => { const l = equipGrid.querySelector('.symptom-list.open'); if (l) tsScrollTo(l, 70); }, 60);
 }
 
 function toggleSymptom(key, sym) {
@@ -3811,10 +3825,13 @@ function toggleSymptom(key, sym) {
   } else {
     activeSymptoms.push(sym);
     sfx.open();
+    var added = true;
   }
   renderEquipList();
   renderResults();
   saveSession();
+  // symptom picked: jump down to the likely causes
+  if (added) setTimeout(() => { const r = document.getElementById('resultPanel'); if (r) tsScrollTo(r); }, 60);
 }
 
 function removeSymptom(sym) {
