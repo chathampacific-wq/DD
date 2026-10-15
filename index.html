@@ -1455,6 +1455,11 @@
   @keyframes splashIn { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: scale(1); } }
   @keyframes splashTap { to { opacity: 1; } }
   @media (prefers-reduced-motion: reduce) { #splash .splash-art, #splash .splash-tap { animation: none; opacity: 1; } }
+  /* even out the picture buttons: same height as the rest, picture cropped (not squashed) to fit */
+  #primaryNav .nav-btn[data-target="log"], #primaryNav .nav-btn[data-target="fieldnotes"], #primaryNav .nav-btn[data-target="mandoors"] {
+    aspect-ratio: auto !important; height: 58px !important; min-height: 0 !important;
+    background-size: cover !important; background-position: center !important;
+  }
   /* room for the raised caps */
   .primary-nav { gap: 10px; padding-bottom: 20px; }
   .equip-grid { gap: 12px; padding-bottom: 18px; }
