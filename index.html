@@ -6852,11 +6852,11 @@ try {
     // runs after the nav handler has opened/closed the section
     setTimeout(() => {
       if (b.classList.contains('nav-active')) { b.classList.add('sl-lit'); try { sfx.surgLights(); } catch (e) {} }
-      else b.classList.remove('sl-lit');
+      else if (b.classList.contains('sl-lit')) b.classList.remove('sl-lit');
     }, 0);
   });
   // lights go back off whenever the log is closed some other way
-  new MutationObserver(() => { if (!b.classList.contains('nav-active')) b.classList.remove('sl-lit'); }).observe(b, { attributes: true, attributeFilter: ['class'] });
+  new MutationObserver(() => { if (!b.classList.contains('nav-active') && b.classList.contains('sl-lit')) b.classList.remove('sl-lit'); }).observe(b, { attributes: true, attributeFilter: ['class'] });
 })();
 } catch (surgLogErr) { /* cosmetic; never let it break the page */ }
 
