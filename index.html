@@ -4927,7 +4927,18 @@ document.getElementById('primaryNav').addEventListener('click', (e) => {
   const first = document.getElementById(SECTION_MAP[target].sections[0]);
   if (first) {
     const vid = target === 'fieldnotes' ? btn.querySelector('.ff-vid') : null;
-    if (vid && !vid.error) {
+    if (target === 'log' && soundOn) {
+      // hold on the button while the OR lights warm up and the hum dies down, then head down to the log;
+      // once the page has moved on, the button goes back to normal with its lettering
+      let fired = false;
+      const cancel = () => { fired = true; ['touchmove', 'wheel'].forEach(ev => window.removeEventListener(ev, cancel)); };
+      ['touchmove', 'wheel'].forEach(ev => window.addEventListener(ev, cancel, { passive: true }));
+      setTimeout(() => {
+        const go = !fired; cancel();
+        if (go) scrollToSection(first);
+        setTimeout(() => { if (btn.classList.contains('sl-lit')) btn.classList.remove('sl-lit'); }, go ? 700 : 0);
+      }, 2700);
+    } else if (vid && !vid.error) {
       // let the video play in the button first, then head down to Field Findings (any touch/scroll cancels the jump)
       let fired = false;
       const cancel = () => { fired = true; window.__ffScrollPending = null; ['touchmove', 'wheel'].forEach(ev => window.removeEventListener(ev, cancel)); };
