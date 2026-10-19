@@ -4860,6 +4860,8 @@ function openSection(target) {
     SECTION_MAP[activeNavTarget].sections.forEach(id => document.getElementById(id).classList.remove('section-open'));
     document.querySelectorAll('.nav-btn.nav-active').forEach(b => { b.classList.remove('nav-active'); b.setAttribute('aria-expanded', 'false'); });
   }
+  // start fresh: any topics left open from last time are closed again
+  map.sections.forEach(id => { const el = document.getElementById(id); if (el) el.querySelectorAll('details[open]').forEach(d => { d.open = false; }); });
   map.sections.forEach(id => document.getElementById(id).classList.add('section-open'));
   if (map.tab) activateRefTab(map.tab);
   const btn = document.querySelector(`.nav-btn[data-target="${target}"]`);
