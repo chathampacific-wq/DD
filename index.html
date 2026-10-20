@@ -6854,15 +6854,7 @@ try {
     sec.querySelectorAll(':scope > details').forEach(d => {
       d.addEventListener('toggle', () => {
         if (!d.open) return;
-        const sm = d.querySelector(':scope > summary');
-        const before = (id === 'mandoors' && sm) ? sm.getBoundingClientRect().top : null;
         sec.querySelectorAll(':scope > details[open]').forEach(o => { if (o !== d) o.open = false; });
-        if (before !== null) {
-          // Man Doors plaques: stay exactly where they were tapped (no jump)
-          const fix = () => { try { const dy = sm.getBoundingClientRect().top - before; if (Math.abs(dy) > 0.5) window.scrollBy({ top: dy, left: 0, behavior: 'instant' }); } catch (e) {} };
-          fix(); requestAnimationFrame(fix);
-          return;
-        }
         // keep the newly opened topic in view (the one above may have just collapsed)
         setTimeout(() => { try { d.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {} }, 30);
       });
