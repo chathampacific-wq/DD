@@ -1332,12 +1332,13 @@
   #mandoors .md-chip:active{transform:translateY(1px)}
   #mandoors .md-chip-s{color:var(--p-muted);font-weight:600}
   #mandoors details:has(> summary.md-pic){background:transparent;border:0;margin:0 0 4px}
-  #mandoors details[open]:has(> summary.md-pic){background:var(--p-panel);border:1px solid var(--p-line)}
-  #mandoors summary.md-pic{justify-content:center;align-items:center;padding:6px 0;background:transparent}
+  #mandoors details[open]:has(> summary.md-pic){background:var(--p-panel);box-shadow:inset 0 0 0 1px var(--p-line)}
+  #mandoors summary.md-pic{justify-content:center;align-items:center;padding:6px 0;background:transparent;-webkit-tap-highlight-color:transparent;overflow-anchor:none}
   #mandoors summary.md-pic::after{content:none}
   #mandoors summary.md-pic img{display:block;height:140px;width:auto;max-width:100%;object-fit:contain;border-radius:8px;
     transition:transform .08s ease, box-shadow .15s ease;filter:drop-shadow(0 4px 8px rgba(0,0,0,.65))}
-  #mandoors summary.md-pic:active img{transform:scale(.97)}
+  #mandoors summary.md-pic:active img{transform:translateY(3px);filter:drop-shadow(0 1px 2px rgba(0,0,0,.7)) brightness(.92)}
+  #mandoors details[open] > summary.md-pic img{transform:translateY(2px);filter:drop-shadow(0 2px 3px rgba(0,0,0,.7))}
   #mandoors details[open] > summary.md-pic img{box-shadow:0 0 0 3px var(--yellow)}
   #mandoors .md-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
   #mandoors .foot{color:var(--p-muted);font-size:.8rem;margin-top:18px}
@@ -6853,7 +6854,15 @@ try {
     sec.querySelectorAll(':scope > details').forEach(d => {
       d.addEventListener('toggle', () => {
         if (!d.open) return;
+        const sm = d.querySelector(':scope > summary');
+        const before = (id === 'mandoors' && sm) ? sm.getBoundingClientRect().top : null;
         sec.querySelectorAll(':scope > details[open]').forEach(o => { if (o !== d) o.open = false; });
+        if (before !== null) {
+          // Man Doors plaques: stay exactly where they were tapped (no jump)
+          const fix = () => { try { const dy = sm.getBoundingClientRect().top - before; if (Math.abs(dy) > 0.5) window.scrollBy({ top: dy, left: 0, behavior: 'instant' }); } catch (e) {} };
+          fix(); requestAnimationFrame(fix);
+          return;
+        }
         // keep the newly opened topic in view (the one above may have just collapsed)
         setTimeout(() => { try { d.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {} }, 30);
       });
